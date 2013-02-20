@@ -1,0 +1,38 @@
+在/etc/sysctl.conf 增加，然后sysctl -p
+fs.aio-max-nr = 3145728
+fs.file-max = 6815744
+net.ipv4.tcp_fin_timeout = 1
+net.ipv4.tcp_tw_recycle = 1
+net.ipv4.tcp_tw_reuse = 1
+net.core.rmem_max = 16777216
+net.core.rmem_default = 16777216
+net.core.netdev_max_backlog = 262144
+net.core.somaxconn = 262144
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_orphans = 262144
+net.ipv4.tcp_max_syn_backlog = 262144
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_syn_retries = 2
+ 
+部分参数解释：
+net.ipv4.tcp_syncookies = 1 表示开启SYN Cookies。当出现SYN等待队列溢出时，启用cookies来处理，可防范少量SYN攻击，默认为0，表示关闭；
+net.ipv4.tcp_tw_reuse = 1 表示开启重用。允许将TIME-WAIT sockets重新用于新的TCP连接，默认为0，表示关闭；
+net.ipv4.tcp_tw_recycle = 1 表示开启TCP连接中TIME-WAIT sockets的快速回收，默认为0，表示关闭。
+net.ipv4.tcp_fin_timeout = 1 表示如果套接字由本端要求关闭，这个参数决定了它保持在FIN-WAIT-2状态的时间。
+net.ipv4.tcp_max_syn_backlog = 262144 表示SYN队列的长度，默认为1024，加大队列长度为8192，可以容纳更多等待连接的网络连接数。
+ 
+然后执行
+netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}'
+
+
+       最大打开文件数的调整
+    操作系统默认打开文件数是1024，这个太小了，如不修改，会报 “too many open files”错误，用户访问会报错，将默认1024调整到40960
+在 /etc/security/limits.conf 增加
+*        soft    noproc  40960
+*        hard    noproc  40960
+*        soft    nofile  40960
+*        hard    nofile  40960
+
+查看命令
+
+netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}'
